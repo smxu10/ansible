@@ -1,0 +1,32 @@
+- hosts: localhost
+  connection: local
+  remote_user: root
+  gather_facts: yes
+  become: true
+  vars:
+    project_root: /var/www/html
+
+  tasks:
+  - name: Creates directory
+    file:
+      path: "{{ project_root }}"
+      state: directory
+      owner: apache
+      group: apache
+      mode: 0755
+      recurse: yes
+
+  - name: Insall Apache Webserver
+    yum: pkg=httpd state=latest
+  - name: custom index.html
+    copy:
+      dest: "{{ project_root }}/index.html"
+      content: |
+                <h1>Apache installed by Ansible !!<h1>
+  - name: Enable Apache on system reboot
+    service: name=httpd enabled=yes
+    notify: restart apache
+  handlers:
+  - name: restart apache
+    service: name=httpd state=restarted
+
